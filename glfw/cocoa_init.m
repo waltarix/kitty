@@ -200,6 +200,12 @@ static void createKeyTables(void)
 //
 static GLFWbool updateUnicodeDataNS(void)
 {
+    if (_glfw.ns.textInputContext)
+    {
+        NSLog(@"IME changed to %@.\n", [_glfw.ns.textInputContext selectedKeyboardInputSource]);
+        _glfw.ns.imeEnabled = [[_glfw.ns.textInputContext selectedKeyboardInputSource] isEqualToString:@"com.google.inputmethod.Japanese.base"];
+    }
+
     if (_glfw.ns.inputSource)
     {
         CFRelease(_glfw.ns.inputSource);
@@ -297,6 +303,8 @@ int _glfwPlatformInit(void)
 
     if (_glfw.hints.init.ns.chdir)
         changeToResourcesDirectory();
+
+    _glfw.ns.textInputContext = [NSTextInputContext new];
 
     _glfw.ns.listener = [[GLFWLayoutListener alloc] init];
     [[NSNotificationCenter defaultCenter]

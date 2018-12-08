@@ -119,6 +119,8 @@ typedef struct _GLFWlibraryNS
     IOHIDManagerRef     hidManager;
     id                  unicodeData;
     id                  listener;
+    id                  textInputContext;
+    GLFWbool            imeEnabled;
 
     char                keyName[64];
     char                text[256];

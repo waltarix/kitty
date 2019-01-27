@@ -141,6 +141,9 @@ on_key_input(int key, int scancode, int action, int mods, const char* text, int 
                 debug("committed pre-edit text: %s\n", text);
             } else debug("committed pre-edit text: (null)\n");
             return;
+        case 3:
+            screen_draw_overlay_text(screen, text);
+            return;
         case 0:
             break;
         default:

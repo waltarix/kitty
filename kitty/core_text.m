@@ -343,8 +343,15 @@ render_color_glyph(CTFontRef font, uint8_t *buf, int glyph_id, unsigned int widt
     if (color_space == NULL) fatal("Out of memory");
     CGContextRef ctx = CGBitmapContextCreate(buf, width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrderDefault);
     if (ctx == NULL) fatal("Out of memory");
+    CGContextSetAllowsAntialiasing(ctx, true);
     CGContextSetShouldAntialias(ctx, true);
+    CGContextSetAllowsFontSmoothing(ctx, true);
     CGContextSetShouldSmoothFonts(ctx, true);  // sub-pixel antialias
+    CGContextSetAllowsFontSubpixelPositioning(ctx, true);
+    CGContextSetShouldSubpixelPositionFonts(ctx, true);
+    CGContextSetAllowsFontSubpixelQuantization(ctx, true);
+    CGContextSetShouldSubpixelQuantizeFonts(ctx, true);
+    CGContextSetLineWidth(ctx, global_state.opts.macos_thicken_font);
     CGContextSetRGBFillColor(ctx, 1, 1, 1, 1);
     CGAffineTransform transform = CGAffineTransformIdentity;
     CGContextSetTextDrawingMode(ctx, kCGTextFill);
@@ -378,8 +385,14 @@ render_glyphs(CTFontRef font, unsigned int width, unsigned int height, unsigned 
     CGColorSpaceRef gray_color_space = CGColorSpaceCreateDeviceGray();
     CGContextRef render_ctx = CGBitmapContextCreate(render_buf, width, height, 8, width, gray_color_space, (kCGBitmapAlphaInfoMask & kCGImageAlphaNone));
     if (render_ctx == NULL || gray_color_space == NULL) fatal("Out of memory");
+    CGContextSetAllowsAntialiasing(render_ctx, true);
     CGContextSetShouldAntialias(render_ctx, true);
+    CGContextSetAllowsFontSmoothing(render_ctx, true);
     CGContextSetShouldSmoothFonts(render_ctx, true);
+    CGContextSetAllowsFontSubpixelPositioning(render_ctx, true);
+    CGContextSetShouldSubpixelPositionFonts(render_ctx, true);
+    CGContextSetAllowsFontSubpixelQuantization(render_ctx, true);
+    CGContextSetShouldSubpixelQuantizeFonts(render_ctx, true);
     CGContextSetGrayFillColor(render_ctx, 1, 1); // white glyphs
     CGContextSetGrayStrokeColor(render_ctx, 1, 1);
     CGContextSetLineWidth(render_ctx, global_state.opts.macos_thicken_font);

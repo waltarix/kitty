@@ -121,6 +121,8 @@ typedef struct _GLFWlibraryNS
     id                  helper;
     id                  keyUpMonitor;
     id                  keyDownMonitor;
+    id                  textInputContext;
+    GLFWbool            imeEnabled;
 
     char                keyName[64];
     char                text[256];

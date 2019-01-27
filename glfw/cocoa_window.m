@@ -867,6 +867,17 @@ is_ascii_control_char(char x) {
         } else {
             window->ns.deadKeyState = 0;
         }
+        if (_glfw.ns.imeEnabled) {
+            if (scancode == 0x24) {
+                _glfwInputKeyboard(window, 0, 0, GLFW_PRESS, 0, "", 3);
+                [self unmarkText];
+            } else {
+                _glfwInputKeyboard(window, 0, 0, GLFW_PRESS, 0, [markedText.string UTF8String], 3);
+                if ([markedText length] > 0) {
+                    return;
+                }
+            }
+        }
         if (window->ns.deadKeyState && (char_count == 0 || scancode == 0x75)) {
             // 0x75 is the delete key which needs to be ignored during a compose sequence
             debug_key(@"Ignoring dead key.\n");

@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*-custom']
+
+jobs:
+  build:
+    runs-on: macOS-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Python
+      run: brew install python
+
+    - name: Setup Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+
+    - name: Install Dependencies
+      run: brew install pkg-config harfbuzz
+
+    - name: Build
+      run: python3 setup.py --verbose kitty.app
+
+    - name: Create DMG
+      run: |
+        npm install
+        npm run createdmg
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: 'dist/*.dmg'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

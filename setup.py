@@ -832,6 +832,7 @@ def macos_info_plist() -> bytes:
         LSMinimumSystemVersion='10.12.0',
         LSRequiresNativeExecution=True,
         NSAppleScriptEnabled=False,
+        NSAppleEventsUsageDescription='',
         # Needed for dark mode in Mojave when linking against older SDKs
         NSRequiresAquaSystemAppearance='NO',
         NSHumanReadableCopyright=time.strftime(

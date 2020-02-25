@@ -18,3 +18,5 @@ __pycache__/
 /docs/generated/
 /.mypy_cache
 .DS_Store
+/node_modules/
+/dist/

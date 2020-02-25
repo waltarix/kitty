@@ -481,24 +481,8 @@ def gen_wcwidth() -> None:
         p('\t\t// }}}\n')
 
     with create_header('kitty/wcwidth-std.h') as p:
-        p('static int\nwcwidth_std(int32_t code) {')
-        p('\tswitch(code) {')
-
-        non_printing = class_maps['Cc'] | class_maps['Cf'] | class_maps['Cs']
-        add(p, 'Flags', flag_codepoints, 2)
-        add(p, 'Marks', marks | {0}, 0)
-        add(p, 'Non-printing characters', non_printing, -1)
-        add(p, 'Private use', class_maps['Co'], -3)
-        add(p, 'Text Presentation', narrow_emoji, 1)
-        add(p, 'East Asian ambiguous width', ambiguous, -2)
-        add(p, 'East Asian double width', doublewidth, 2)
-        add(p, 'Emoji Presentation', wide_emoji, 2)
-
-        add(p, 'Not assigned in the unicode character database', not_assigned, -4)
-
-        p('\t\tdefault: return 1;')
-        p('\t}')
-        p('\treturn 1;\n}')
+        p('#include "wcwidth9.h"\n')
+        p('#define wcwidth_std wcwidth9\n')
 
         p('static bool\nis_emoji_presentation_base(uint32_t code) {')
         p('\tswitch(code) {')

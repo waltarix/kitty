@@ -223,9 +223,9 @@ def get_ranges(items: List[int]) -> Generator[Union[int, Tuple[int, int]], None,
 
 def write_case(spec: Union[Tuple, int], p: Callable) -> None:
     if isinstance(spec, tuple):
-        p('\t\tcase 0x{:x} ... 0x{:x}:'.format(*spec))
+        p('\t{{0x{:x}, 0x{:x}}},'.format(*spec))
     else:
-        p('\t\tcase 0x{:x}:'.format(spec))
+        p('\t{{0x{:x}, 0x{:x}}},'.format(spec, spec))
 
 
 @contextmanager
@@ -248,23 +248,22 @@ def create_header(path: str, include_data_types: bool = True) -> Generator[Calla
 
 def gen_emoji() -> None:
     with create_header('kitty/emoji.h') as p:
-        p('static inline bool\nis_emoji(char_type code) {')
-        p('\tswitch(code) {')
+        p('#include "unicode-range.h"\n')
+        p('static const struct unicode_range_table\nemoji_table[] = {')
         for spec in get_ranges(list(all_emoji)):
             write_case(spec, p)
-            p('\t\t\treturn true;')
-        p('\t\tdefault: return false;')
-        p('\t}')
-        p('\treturn false;\n}')
+        p('};\n')
+        p('static inline bool\nis_emoji(char_type code) {')
+        p('\treturn unicode_range_bsearch(emoji_table, sizeof(emoji_table) / sizeof(struct unicode_range_table) - 1, code);')
+        p('}\n')
 
-        p('static inline bool\nis_symbol(char_type code) {')
-        p('\tswitch(code) {')
+        p('static const struct unicode_range_table\nsymbol_table[] = {')
         for spec in get_ranges(list(all_symbols)):
             write_case(spec, p)
-            p('\t\t\treturn true;')
-        p('\t\tdefault: return false;')
-        p('\t}')
-        p('\treturn false;\n}')
+        p('};\n')
+        p('static inline bool\nis_symbol(char_type code) {')
+        p('\treturn unicode_range_bsearch(symbol_table, sizeof(symbol_table) / sizeof(struct unicode_range_table) - 1, code);')
+        p('}\n')
 
 
 def category_test(
@@ -282,14 +281,14 @@ def category_test(
         chars |= class_maps[c]
     chars |= extra_chars
     chars -= exclude
-    p(f'{static}bool\n{name}(char_type code) {{')
-    p(f'\t// {comment} ({len(chars)} codepoints)' + ' {{' '{')
-    p('\tswitch(code) {')
+    p(f'static const struct unicode_range_table\n{name}_table[] = {{')
     for spec in get_ranges(list(chars)):
         write_case(spec, p)
-        p('\t\t\treturn true;')
-    p('\t} // }}}\n')
-    p('\treturn false;\n}\n')
+    p('};\n')
+    p(f'{static}bool\n{name}(char_type code) {{')
+    p(f'\t// {comment} ({len(chars)} codepoints)' + ' {{' '{')
+    p(f'\treturn unicode_range_bsearch({name}_table, sizeof({name}_table) / sizeof(struct unicode_range_table) - 1, code);')
+    p('}\n')
 
 
 def codepoint_to_mark_map(p: Callable, mark_map: List[int]) -> Dict[int, int]:
@@ -331,6 +330,7 @@ def classes_to_regex(classes: Iterable[str], exclude: str = '') -> Iterable[str]
 def gen_ucd() -> None:
     cz = {c for c in class_maps if c[0] in 'CZ'}
     with create_header('kitty/unicode-data.c') as p:
+        p('#include "unicode-range.h"\n')
         p('#include "unicode-data.h"')
         category_test(
                 'is_combining_char', p,
@@ -421,7 +421,7 @@ def gen_names() -> None:
         p('}; // }}}\n')
 
         # The trie
-        p('typedef struct {{ uint32_t children_offset; uint32_t match_offset; }} word_trie;\n')
+        p('typedef struct { uint32_t children_offset; uint32_t match_offset; } word_trie;\n')
         all_trie_nodes: List['TrieNode'] = []  # noqa
 
         class TrieNode:
@@ -481,33 +481,17 @@ def gen_wcwidth() -> None:
         p('\t\t// }}}\n')
 
     with create_header('kitty/wcwidth-std.h') as p:
-        p('static int\nwcwidth_std(int32_t code) {')
-        p('\tswitch(code) {')
+        p('#include "unicode-range.h"\n')
+        p('#include "wcwidth9.h"\n')
+        p('#define wcwidth_std wcwidth9\n')
 
-        non_printing = class_maps['Cc'] | class_maps['Cf'] | class_maps['Cs']
-        add(p, 'Flags', flag_codepoints, 2)
-        add(p, 'Marks', marks | {0}, 0)
-        add(p, 'Non-printing characters', non_printing, -1)
-        add(p, 'Private use', class_maps['Co'], -3)
-        add(p, 'Text Presentation', narrow_emoji, 1)
-        add(p, 'East Asian ambiguous width', ambiguous, -2)
-        add(p, 'East Asian double width', doublewidth, 2)
-        add(p, 'Emoji Presentation', wide_emoji, 2)
-
-        add(p, 'Not assigned in the unicode character database', not_assigned, -4)
-
-        p('\t\tdefault: return 1;')
-        p('\t}')
-        p('\treturn 1;\n}')
-
-        p('static bool\nis_emoji_presentation_base(uint32_t code) {')
-        p('\tswitch(code) {')
+        p('static const struct unicode_range_table\nemoji_presentation_table[] = {')
         for spec in get_ranges(list(emoji_presentation_bases)):
             write_case(spec, p)
-            p('\t\t\treturn true;')
-        p('\t\tdefault: return false;')
-        p('\t}')
-        p('\treturn 1;\n}')
+        p('};\n')
+        p('static bool\nis_emoji_presentation_base(uint32_t code) {')
+        p('\treturn unicode_range_bsearch(emoji_presentation_table, sizeof(emoji_presentation_table) / sizeof(struct unicode_range_table) - 1, code);')
+        p('}\n')
 
 
 parse_ucd()

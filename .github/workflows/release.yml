@@ -2,7 +2,9 @@ name: Release
 
 on:
   push:
-    tags: ['v*.*.*-custom']
+    tags:
+      - 'v*.*.*-custom'
+      - 'v*.*.*-custom-r*'
 
 jobs:
   build:

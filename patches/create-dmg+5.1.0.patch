@@ -1,0 +1,34 @@
+diff --git a/node_modules/create-dmg/cli.js b/node_modules/create-dmg/cli.js
+index 0364536..7c0bff2 100755
+--- a/node_modules/create-dmg/cli.js
++++ b/node_modules/create-dmg/cli.js
+@@ -79,8 +79,9 @@ async function init() {
+ 	}
+ 
+ 	const appName = appInfo.CFBundleDisplayName || appInfo.CFBundleName;
+-	const dmgTitle = cli.flags.dmgTitle || appName;
+-	const dmgPath = path.join(destinationPath, `${appName} ${appInfo.CFBundleShortVersionString}.dmg`);
++	const appVersion = appInfo.CFBundleShortVersionString;
++	const dmgTitle = `${appName}-${appVersion}`;
++	const dmgPath = path.join(destinationPath, `${dmgTitle}.dmg`);
+ 
+ 	if (dmgTitle > 27) {
+ 		ora.fail('The disk image title cannot exceed 27 characters. This is a limitation in a dependency: https://github.com/LinusU/node-alias/issues/7');
+@@ -93,7 +94,7 @@ async function init() {
+ 		} catch (_) {}
+ 	}
+ 
+-	const hasAppIcon = appInfo.CFBundleIconFile;
++	const hasAppIcon = false;
+ 	let composedIconPath;
+ 	if (hasAppIcon) {
+ 		ora.text = 'Creating icon';
+@@ -148,6 +149,8 @@ async function init() {
+ 	});
+ 
+ 	ee.on('finish', async () => {
++		process.exit(0);
++
+ 		try {
+ 			ora.text = 'Adding Software License Agreement if needed';
+ 			await addLicenseAgreementIfNeeded(dmgPath, dmgFormat);

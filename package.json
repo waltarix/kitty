@@ -1,0 +1,13 @@
+{
+  "name": "kitty",
+  "version": "0.17.4",
+  "scripts": {
+    "postinstall": "patch-package",
+    "precreatedmg": "mkdir -p dist",
+    "createdmg": "create-dmg kitty.app dist"
+  },
+  "devDependencies": {
+    "create-dmg": "^5.1.0",
+    "patch-package": "^6.2.2"
+  }
+}

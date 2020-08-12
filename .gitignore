@@ -19,3 +19,5 @@ __pycache__/
 /.mypy_cache
 .DS_Store
 bypy/b
+/node_modules/
+/dist/

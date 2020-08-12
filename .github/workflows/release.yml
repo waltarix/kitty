@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*.*.*-custom
+      - v*.*.*-custom-r*
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+
+    - name: Install Dependencies
+      run: brew install pkg-config harfbuzz little-cms2
+
+    - name: Build
+      run: python3.8 setup.py --verbose kitty.app
+
+    - name: Create DMG
+      run: |
+        npm install
+        npm run createdmg
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: 'dist/*.dmg'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
